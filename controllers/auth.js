@@ -1,4 +1,4 @@
-const { validationResult } = require('express-validator')
+const bcrypt = require('bcryptjs')
 const User = require('../models/User')
 
 const createUser = async (req, res) => {
@@ -15,6 +15,9 @@ const createUser = async (req, res) => {
       })
 
     user = new User(req.body)
+    const salt = bcrypt.genSaltSync()
+    user.password = bcrypt.hashSync(password, salt)
+
     await user.save()
 
     res.status(201).json({
