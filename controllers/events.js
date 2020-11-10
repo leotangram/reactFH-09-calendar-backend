@@ -28,11 +28,47 @@ const createEvent = async (request, response) => {
   }
 }
 
-const updateEvent = (request, response) => {
-  response.json({
-    ok: true,
-    message: 'updateEvent'
-  })
+const updateEvent = async (request, response) => {
+  const eventId = request.params.id
+  const uid = request.uid
+
+  try {
+    const event = await Event.findById(eventId)
+
+    if (!event) {
+      return response.status(404).json({
+        ok: false,
+        message: 'El evento no existe'
+      })
+    }
+
+    if (event.user.toString() !== uid) {
+      return response.status(401).json({
+        ok: false,
+        message: 'No tiene priviliegios para editar este evento'
+      })
+    }
+
+    const newEvent = {
+      ...request.body,
+      user: uid
+    }
+
+    const updatedEvent = await Event.findByIdAndUpdate(eventId, newEvent, {
+      new: true
+    })
+
+    response.json({
+      ok: true,
+      event: updatedEvent
+    })
+  } catch (error) {
+    console.log(error)
+    response.status(500).json({
+      ok: false,
+      message: 'Hable con el administrador'
+    })
+  }
 }
 
 const deleteEvent = (request, response) => {
