@@ -1,3 +1,5 @@
+const Event = require('../models/Event')
+
 const getEvents = (request, response) => {
   response.json({
     ok: true,
@@ -5,13 +7,23 @@ const getEvents = (request, response) => {
   })
 }
 
-const createEvent = (request, response) => {
-  console.log(request.body)
+const createEvent = async (request, response) => {
+  const event = new Event(request.body)
 
-  response.json({
-    ok: true,
-    message: 'createEvent'
-  })
+  try {
+    event.user = request.uid
+
+    const savedEvent = await event.save()
+
+    response.json({ ok: true, event: savedEvent })
+  } catch (error) {
+    console.log(error)
+
+    response.status(500).json({
+      ok: false,
+      message: 'Hable con el administrador'
+    })
+  }
 }
 
 const updateEvent = (request, response) => {
